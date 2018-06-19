@@ -1,10 +1,16 @@
+import uuid
 import socket
 import sys
+import os
 
 
 host = sys.argv[1]
 port = int(sys.argv[2])
 cmd = None
+# create info based on os, todo gpu,cpu etc und struct
+osinfo = os.uname()
+# create id based on host ID and current time
+id = uuid.uuid1()
 if len(sys.argv) >= 4:
     cmd = sys.argv[3]
 
