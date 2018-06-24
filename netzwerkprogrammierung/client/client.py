@@ -4,39 +4,40 @@ import sys
 import os
 
 
-host = sys.argv[1]
-port = int(sys.argv[2])
-cmd = None
-# create info based on os, todo gpu,cpu etc und struct
-osinfo = os.uname()
-# create id based on host ID and current time
-id = uuid.uuid1()
-if len(sys.argv) >= 4:
-    cmd = sys.argv[3]
+class MyClient:
+    def __init__(self, s=None):
+        # initialize socket
+        if s is None:
+            self.s = socket.socket(socket.AF_INET,
+                                   socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        else:
+            self.s = s
+        # initialize info and id
+        self.host = sys.argv[1]
+        self.port = int(sys.argv[2])
+        osinfo = os.uname()
+        id = uuid.uuid1()
+        self.info = [id, osinfo]
 
-# create new socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+    def connect(self, host, port):
+        self.s.connect((host, port))
+        self.local = self.s.getsockname()
+        self.remote = self.s.getpeername()
 
-# connect to host:port
-s.connect((host, port))
+    def send(self):
+        if len(sys.argv) >= 4:
+            cmd = sys.argv[3]
+        # send cmd
+        if cmd is not None:
+            # convert cmd into byte array
+            self.sentbytes = self.s.send(bytes(cmd+"\n", 'utf-8'))
 
-# get information about connection
-local = s.getsockname()
-remote = s.getpeername()
+    def receive(self):
+        while True:
+            recievedbytes = self.s.recv(10)
+            if (len(recievedbytes) == 0):
+                break
+            print(recievedbytes.decode('utf-8'))
 
-print("{}:{} -> {}:{}".format(local[0], local[1], remote[0], remote[1]))
-
-# send cmd
-if cmd is not None:
-    # convert cmd into byte array
-    sentbytes = s.send(bytes(cmd+"\n", 'utf-8'))
-
-# recieve response
-while True:
-    recievedbytes = s.recv(10)
-    if (len(recievedbytes) == 0):
-        break
-    print(recievedbytes.decode('utf-8'))
-
-# close connection
-s.close()
+    def disconnect(self):
+        self.s.close()

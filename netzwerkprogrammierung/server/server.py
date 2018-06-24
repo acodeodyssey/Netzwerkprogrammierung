@@ -19,6 +19,8 @@ print("Start server at {}:{}".format(host, port))
 try:
     while True:
         inSocket, addr = s.accept()
+        ct = client_thread(inSocket)
+        ct.run()
 
         print("Connection from {}".format(addr))
 
