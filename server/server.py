@@ -1,10 +1,10 @@
-import socket
 import json
+import socket
 
 # create new socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
 host = 'localhost'
-clients = None
+clients = []
 # bind to localhost/port
 s.bind((host, 8443))
 
@@ -21,7 +21,10 @@ try:
             recievedbytes = inSocket.recv(1024)
             if (len(recievedbytes) == 0):
                 break
-            print(recievedbytes.decode("utf-8"))
+            recievedmsg = recievedbytes.decode("utf-8")
+            data = json.loads(recievedmsg)
+            print(data['info'])
+
         inSocket.close()
 
 finally:

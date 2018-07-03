@@ -1,9 +1,9 @@
 import platform
-import uuid
 import socket
+import uuid
 
 
-class myclient:
+class MyClient:
     def __init__(self, s=None):
         # initialize socket
         if s is None:
@@ -13,7 +13,8 @@ class myclient:
         else:
             self.s = s
         self.id = str(uuid.uuid1())
-        self.info = {'machine': platform.machine()}
+        self.info = {'machine': platform.machine(),
+                     'architecture': platform.architecture()}
 
     def connect(self, host, port):
         self.s.connect((host, port))
