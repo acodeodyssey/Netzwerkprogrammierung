@@ -1,34 +1,27 @@
 import socket
-import time
-
-
-host = 'localhost'
-port = 8443
+import json
 
 # create new socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-
+host = 'localhost'
+clients = None
 # bind to localhost/port
-s.bind((host, port))
+s.bind((host, 8443))
 
 # listen on socket
 s.listen(socket.SOMAXCONN)
 
-print("Start server at {}:{}".format(host, port))
+print("Start server at {}:{}".format(host, 80))
 
 try:
     while True:
         inSocket, addr = s.accept()
-        ct = client_thread(inSocket)
-        ct.run()
-
         print("Connection from {}".format(addr))
-
-        msg = "Hello {0}, nice to meet you!\n".format(*socket.gethostbyaddr
-                                                      (addr[0]))
-        msg2 = "it's {1}/{2}/{0} {3}:{4}:{5}\n".format(*time.localtime())
-        inSocket.send(bytes(msg, 'utf-8'))
-        inSocket.send(bytes(msg2, 'utf-8'))
+        while True:
+            recievedbytes = inSocket.recv(1024)
+            if not recievedbytes:
+                break
+        print(recievedbytes.decode("utf-8"))
         inSocket.close()
 
 finally:
