@@ -13,8 +13,10 @@ class MyClient:
         else:
             self.s = s
         self.id = str(uuid.uuid1())
-        self.info = {'machine': platform.machine(),
-                     'architecture': platform.architecture()}
+        self.info = [{'release': platform.release(),
+                      'architecture': platform.architecture()}]
+        self.local = None
+        self.remote = None
 
     def connect(self, host, port):
         self.s.connect((host, port))
