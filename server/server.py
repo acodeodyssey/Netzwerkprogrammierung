@@ -19,11 +19,13 @@ try:
         print("Connection from {}".format(addr))
         while True:
             recievedbytes = inSocket.recv(1024)
-            if (len(recievedbytes) == 0):
+            if len(recievedbytes) == 0:
                 break
             recievedmsg = recievedbytes.decode("utf-8")
             data = json.loads(recievedmsg)
-            print(data['info'])
+            if data['type'] == "hello":
+                clients.append(data['content'])
+                print("Client with Id: " + data['content'][0]['id'] + " said hello")
 
         inSocket.close()
 
