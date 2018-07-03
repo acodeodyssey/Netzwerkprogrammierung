@@ -19,9 +19,9 @@ try:
         print("Connection from {}".format(addr))
         while True:
             recievedbytes = inSocket.recv(1024)
-            if not recievedbytes:
+            if (len(recievedbytes) == 0):
                 break
-        print(recievedbytes.decode("utf-8"))
+            print(recievedbytes.decode("utf-8"))
         inSocket.close()
 
 finally:
