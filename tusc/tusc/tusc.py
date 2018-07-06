@@ -1,14 +1,31 @@
 import json
+from threading import Thread
 
 from client import myclient
 
 
-class Tusc:
+class Tusc(Thread):
     def __init__(self):
-        host = "127.0.0.1"
-        port = 8443
+        Thread.__init__(self)
+        self.servers = [
+            {'name': 'local', 'host': "127.0.0.1", 'port': 8443}
+        ]
         self.client = myclient.MyClient()
-        self.client.connect(host, port)
+
+    def run(self):
+        if self.connecttoserver() is None:
+            print("Could not connect to a Server, closing...")
+            exit()
+        self.hello()
+
+    def connecttoserver(self):
+        lastserver = len(self.servers) - 1
+        for server in self.servers:
+            if self.client.connect(server['host'], server['port']):
+                print("Connected to {}".format(server['name']))
+                return
+            elif lastserver:
+                return 0
 
     def hello(self):
         hello = json.dumps({'type': "hello", 'content': [{'id': self.client.id, 'info': self.client.info}]})
@@ -25,10 +42,6 @@ class Tusc:
         print("todo")
 
 
-def main():
-    tusc = Tusc()
-    tusc.hello()
-
-
 if __name__ == "__main__":
-    main()
+    tusc = Tusc()
+    tusc.start()
