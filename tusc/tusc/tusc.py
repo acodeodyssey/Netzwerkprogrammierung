@@ -13,6 +13,8 @@ class Tusc:
     def hello(self):
         hello = json.dumps({'type': "hello", 'content': [{'id': self.client.id, 'info': self.client.info}]})
         self.client.send(hello)
+        self.client.waitforanswer()
+        self.client.close()
 
     def heartbeat(self):
         print("todo")
@@ -27,3 +29,4 @@ class Tusc:
 if __name__ == "__main__":
     tusc = Tusc()
     tusc.hello()
+
