@@ -33,7 +33,7 @@ class MyClient:
             recievedbytes = self.s.recv(1024)
             if len(recievedbytes) == 0:
                 break
-        print(recievedbytes.decode("utf-8"))
+            print(recievedbytes.decode("utf-8"))
 
     def closeconnection(self):
         self.s.close()
