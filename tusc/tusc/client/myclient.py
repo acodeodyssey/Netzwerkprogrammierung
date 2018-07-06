@@ -23,10 +23,10 @@ class MyClient:
             self.s.connect((host, port))
         except socket.error:
             print("Failed to connect to {}:{}".format(host, port))
-            return None
+            return False
         self.local = self.s.getsockname()
         self.remote = self.s.getpeername()
-        return
+        return True
 
     def send(self, msg):
         serialized = str.encode(msg+"\n")

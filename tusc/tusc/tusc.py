@@ -13,7 +13,7 @@ class Tusc(Thread):
         self.client = myclient.MyClient()
 
     def run(self):
-        if self.connecttoserver() is None:
+        if not self.connecttoserver():
             print("Could not connect to a Server, closing...")
             exit()
         self.hello()
