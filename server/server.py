@@ -1,31 +1,49 @@
 import json
 import socket
+import sys
+import time
 from threading import Thread
 
 
 class ClientHandler(Thread):
     def __init__(self, inSocket, address):
         Thread.__init__(self)
+        self.timeout = time.time() + 60
         self.socket = inSocket
         self.clientaddress = address
+        self.id = None
         print("Connection from {}".format(address))
 
     def run(self):
-        while True:
-            recievedbytes = inSocket.recv(1024)
-            if len(recievedbytes) == 0:
-                break
-            recievedmsg = recievedbytes.decode("utf-8")
-            data = json.loads(recievedmsg)
-            if data['type'] == "hello":
-                clients.append(data['content'])
-                print("Client with Id: " + data['content'][0]['id'] + " said hello")
-                self.send("hi client")
+        try:
+            while self.timeout > time.time():
+                recievedbytes = inSocket.recv(1024)
+                if len(recievedbytes) == 0:
+                    break
+                recievedmsg = recievedbytes.decode("utf-8")
+                data = json.loads(recievedmsg)
+                msgtype = data['type']
+                if msgtype == "hello":
+                    self.id = data['content'][0]['id']
+                    clients.append(data['content'])
+                    print("Client with Id:{} said hello ".format(self.id))
+                    self.send("hi client")
+                elif msgtype == "beat":
+                    print("Client with Id:{} send heartbeat".format(self.id))
+                    self.timeout += 30
+                else:
+                    print("Client sent invalid message")
+                    self.timeout += 30
+        finally:
+            print("Client Timed Out")
+            self.closesock()
+            sys.exit()
 
     def send(self, msg):
         self.socket.send(str.encode(msg + "\n"))
 
     def closesock(self):
+        print("Closing Connection")
         self.socket.close()
 
 
