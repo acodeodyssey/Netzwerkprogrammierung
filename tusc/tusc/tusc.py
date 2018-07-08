@@ -1,5 +1,6 @@
 import json
 from threading import Thread
+from threading import Timer
 
 from client import myclient
 
@@ -17,15 +18,15 @@ class Tusc(Thread):
             print("Could not connect to a Server, closing...")
             exit()
         self.hello()
+        self.heartbeat()
 
     def connecttoserver(self):
-        lastserver = len(self.servers) - 1
-        for server in self.servers:
+        for idx, server in enumerate(self.servers):
             if self.client.connect(server['host'], server['port']):
                 print("Connected to {}".format(server['name']))
-                return
-            elif lastserver:
-                return 0
+                return True
+            elif len(self.servers) - 1:
+                return False
 
     def hello(self):
         hello = json.dumps({'type': "hello", 'content': [{'id': self.client.id, 'info': self.client.info}]})
@@ -33,7 +34,9 @@ class Tusc(Thread):
         self.client.waitforanswer()
 
     def heartbeat(self):
-        print("todo")
+        Timer(30.0, self.heartbeat).start()
+        beat = json.dumps({'type': "beat"})
+        self.client.send(beat)
 
     def update(self):
         print("todo")
