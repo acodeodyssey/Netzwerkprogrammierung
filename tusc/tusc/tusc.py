@@ -29,7 +29,7 @@ class Tusc(Thread):
                 return False
 
     def hello(self):
-        hello = json.dumps({'type': "hello", 'id': self.client.id, 'info': self.client.info})
+        hello = json.dumps({'type': "hello", 'content': [{'id': self.client.id, 'info': self.client.info}]})
         self.client.send(hello)
         self.client.waitforanswer()
 
