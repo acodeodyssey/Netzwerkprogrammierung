@@ -1,4 +1,6 @@
 import json
+import logging
+import os
 import socket
 import sys
 import time
@@ -32,18 +34,18 @@ class ClientHandler(Thread):
 
                 if msgtype == "hello":
                     self.id = data['id']
-                    print("Client with Id:{} said hello ".format(self.id))
+                    logging.info("Client with Id:{} said hello ".format(self.id))
                     self.client.info = data['info']
                     clients[self.id] = self.client
                     self.send("hi client")
                     self.timeout += 10.0
                 elif msgtype == "beat":
-                    print("Client with Id:{} sent heartbeat".format(self.id))
+                    logging.info("Client with Id:{} sent heartbeat".format(self.id))
                     self.timeout += 10.0
                 else:
-                    print("Client sent invalid message")
+                    logging.warning("Client sent invalid message")
                     self.timeout += 10.0
-            print("Client Timed Out")
+            logging.warning("Client Timed Out")
         finally:
             del clients[self.id]
             self.closesock()
@@ -54,7 +56,7 @@ class ClientHandler(Thread):
         self.socket.send(str.encode(msg + "\n"))
 
     def closesock(self):
-        print("Closing Connection")
+        logging.info("Closing Connection")
         self.socket.close()
 
 
@@ -69,6 +71,22 @@ def listclients():
         value.printinfo()
 
 
+def handleinput():
+    cmd = input().split()
+    if cmd[0] == "show" and len(cmd) == 2:
+        showclient(cmd[1])
+
+    elif cmd[0] == "list":
+        listclients()
+
+    elif cmd[0] == "quit":
+        s.close()
+        os._exit(1)
+
+    else:
+        print("Not a valid Command, for more info, read the Readme")
+
+
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
     host = 'localhost'
@@ -77,11 +95,12 @@ if __name__ == "__main__":
     print("Start server at {}:{}".format(host, 8443))
     try:
         while True:
+            i = Thread(target=handleinput, args=[])
+            i.start()
             s.listen(socket.SOMAXCONN)
             inSocket, addr = s.accept()
             clientHandler = ClientHandler(inSocket, addr)
             clientHandler.start()
-            listclients()
 
     finally:
         s.close()
