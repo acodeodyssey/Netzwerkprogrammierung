@@ -1,4 +1,5 @@
 import json
+import sys
 from threading import Thread
 from threading import Timer
 
@@ -38,13 +39,33 @@ class Tusc(Thread):
         beat = json.dumps({'type': "beat"})
         self.client.send(beat)
 
-    def update(self):
+    def update(self, package):
         print("todo")
 
     def upgrade(self):
         print("todo")
 
+    def exit(self):
+        self.client.closeconnection()
+        sys.exit()
+
 
 if __name__ == "__main__":
     tusc = Tusc()
     tusc.start()
+    while True:
+        cmd = input().split()
+        print(cmd)
+        if cmd[0] == "update" and len(cmd) == 2:
+            tusc.update(cmd[1])
+
+        elif cmd[0] == "upgrade":
+            tusc.upgrade()
+
+        elif cmd[0] == "quit":
+            print("quitting")
+            tusc.exit()
+            sys.exit()
+
+        else:
+            print("Not a valid Command, for more info read the Readme")
