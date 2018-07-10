@@ -1,3 +1,4 @@
+import logging
 import platform
 import socket
 import uuid
@@ -22,7 +23,7 @@ class MyClient:
         try:
             self.s.connect((host, port))
         except socket.error:
-            print("Failed to connect to {}:{}".format(host, port))
+            logging.warning("Failed to connect to {}:{}".format(host, port))
             return False
         self.local = self.s.getsockname()
         self.remote = self.s.getpeername()
@@ -30,7 +31,7 @@ class MyClient:
 
     def send(self, msg):
         serialized = str.encode(msg+"\n")
-        print("Sending Message: " + msg)
+        logging.info("Sending Message: " + msg)
         self.s.send(serialized)
 
     def waitforanswer(self):

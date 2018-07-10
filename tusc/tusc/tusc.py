@@ -35,7 +35,7 @@ class Tusc(Thread):
         self.client.waitforanswer()
 
     def heartbeat(self):
-        Timer(30.0, self.heartbeat).start()
+        Timer(10.0, self.heartbeat).start()
         beat = json.dumps({'type': "beat"})
         self.client.send(beat)
 
@@ -55,7 +55,6 @@ if __name__ == "__main__":
     tusc.start()
     while True:
         cmd = input().split()
-        print(cmd)
         if cmd[0] == "update" and len(cmd) == 2:
             tusc.update(cmd[1])
 
