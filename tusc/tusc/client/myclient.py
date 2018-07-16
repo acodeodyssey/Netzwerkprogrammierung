@@ -1,3 +1,4 @@
+import json
 import logging
 import platform
 import socket
@@ -33,6 +34,30 @@ class MyClient:
         serialized = str.encode(msg+"\n")
         logging.info("Sending Message: " + msg)
         self.s.send(serialized)
+
+    def recvpkgs(self):
+        while True:
+            while True:
+                recievedbytes = self.s.recv(1024)
+                if len(recievedbytes) == 0:
+                    break
+                break
+
+            pkginfo = json.loads(recievedbytes)
+            name = pkginfo['file']
+            if name == "endTransfer":
+                break
+            print("updating:{}".format(name))
+            f = open(name, 'wb')
+
+            while True:
+                l = self.s.recv(1024)
+                if len(l) == 0:
+                    f.close()
+                    break
+                f.write(l)
+                break
+            f.close()
 
     def waitforanswer(self):
         while True:

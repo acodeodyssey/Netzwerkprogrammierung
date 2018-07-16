@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from threading import Thread
 from threading import Timer
@@ -16,7 +17,6 @@ class Tusc(Thread):
 
     def run(self):
         if not self.connecttoserver():
-            print("Could not connect to a Server, closing...")
             exit()
         self.hello()
         self.heartbeat()
@@ -35,15 +35,21 @@ class Tusc(Thread):
         self.client.waitforanswer()
 
     def heartbeat(self):
-        Timer(10.0, self.heartbeat).start()
+        Timer(30.0, self.heartbeat).start()
         beat = json.dumps({'type': "beat"})
         self.client.send(beat)
 
     def update(self, package):
-        print("todo")
+        updatemsg = json.dumps({'type': "update", 'package': package})
+        self.client.send(updatemsg)
+        self.client.recvpkgs()
+        print("finished updating")
 
     def upgrade(self):
-        print("todo")
+        upgrademsg = json.dumps({'type': "upgrade"})
+        self.client.send(upgrademsg)
+        self.client.recvpkgs()
+        print("finished upgrading")
 
     def exit(self):
         self.client.closeconnection()
@@ -64,7 +70,7 @@ if __name__ == "__main__":
         elif cmd[0] == "quit":
             print("quitting")
             tusc.exit()
-            sys.exit()
+            os._exit()
 
         else:
             print("Not a valid Command, for more info read the Readme")

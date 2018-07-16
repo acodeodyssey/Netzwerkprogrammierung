@@ -33,6 +33,7 @@ class ClientHandler(Thread):
                 self.client.lastseen = time.time()
                 data = json.loads(recievedmsg)
                 msgtype = data['type']
+                print(data)
 
                 if msgtype == "hello":
                     self.id = data['id']
@@ -40,17 +41,27 @@ class ClientHandler(Thread):
                     self.client.info = data['info']
                     clients[self.id] = self.client
                     self.send("hi client")
-                    self.timeout += 10.0
+                    self.timeout += 30.0
                 elif msgtype == "beat":
+                    print("beat")
                     logging.info("Client with Id:{} sent heartbeat".format(self.id))
-                    self.timeout += 10.0
+                    self.timeout += 30.0
                 elif msgtype == "update":
-                    self.sendupdate(self, packages[data['package']])
+                    pkg = packages.get(data['package'])
+                    if pkg is None:
+                        self.send(json.dumps({'file': "endTransfer"}))
+                        continue
+                    self.sendupdate(pkg)
+                    time.sleep(1)
+                    self.send(json.dumps({'file': "endTransfer"}))
+                    self.timeout += 30.0
                 elif msgtype == "upgrade":
+                    print("upgrade")
                     self.sendupgrade()
+                    self.timeout += 30.0
                 else:
                     logging.warning("Client sent invalid message")
-                    self.timeout += 10.0
+                    self.timeout += 30.0
             logging.warning("Client Timed Out")
         finally:
             del clients[self.id]
@@ -59,21 +70,30 @@ class ClientHandler(Thread):
 
     def sendupgrade(self):
         """Send Upgrade to client"""
-        for pkg in packages:
-            self.sendupdate(pkg['pkg'])
-        self.send("endupgrade")
+        for key, pkg in packages.items():
+            self.sendupdate(pkg)
+            time.sleep(1)
+
+        self.send(json.dumps({'file': "endTransfer"}))
 
     def sendupdate(self, pkg):
         """Send Update of given Package to client"""
-        self.send(json.dumps({"updatepkg": pkg.name, "version": pkg.version, "url": pkg.url}))
+        self.send(json.dumps({'name': pkg.name, 'version': pkg.version, 'file': pkg.file}))
         self.sendfile(pkg.file)
 
     def sendfile(self, file):
-        with open(file, 'rb') as f:
-            self.socket.send(f.read(1024))
+        f = open(file, 'rb')
+        while True:
+            l = f.read(1024)
+            if len(l) == 0:
+                break
+            self.socket.send(l)
+            break
+        f.close()
 
     def send(self, msg):
         """"Encode and send msg to client"""
+        print(msg)
         self.socket.send(str.encode(msg + "\n"))
 
     def closesock(self):
@@ -85,7 +105,7 @@ def indexpackages():
     """Iterates over Packages in Resource Folder and saves the Information in a List"""
     files = os.listdir('resources')
     for file in files:
-        details = file.split('.t')
+        details = file.split('.z')
         pkgdetail = details[0].split('_')
         pkg = package.Package(pkgdetail[0], pkgdetail[1], "localhost:8443/resources/{}".format(file),
                               "resources/{}".format(file))
