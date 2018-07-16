@@ -12,9 +12,18 @@ import package
 clients = {}
 packages = {}
 
+
 class ClientHandler(Thread):
+    """
+    Client Handler handles clients
+    """
     def __init__(self, inSocket, address):
-        """Init Thread with Informaton regarding the Client"""
+        """
+        Init Thread with Informaton regarding the Client
+        :param self:
+        :param inSocket: ingoing Socket for Client
+        :param address: Address of Client
+        """
         Thread.__init__(self)
         self.socket = inSocket
         self.timeout = time.time() + 30.0
@@ -23,6 +32,14 @@ class ClientHandler(Thread):
         print("Connection from {}".format(address))
 
     def run(self):
+        """
+        Handling Interaction with Client based on Commands
+
+        Commands: Hello - Clients logs in to server
+                  beat  - Client show's points out he did not die in the meantime
+                  update - send update of specific package to client
+                  upgrade - send updates of all packages to client
+        """
         self.timeout = time.time() + 30.0
         try:
             while self.timeout > time.time():
@@ -43,8 +60,7 @@ class ClientHandler(Thread):
                     self.send("hi client")
                     self.timeout += 30.0
                 elif msgtype == "beat":
-                    print("beat")
-                    logging.info("Client with Id:{} sent heartbeat".format(self.id))
+                    print("Client with Id:{} sent heartbeat".format(self.id))
                     self.timeout += 30.0
                 elif msgtype == "update":
                     pkg = packages.get(data['package'])
@@ -69,7 +85,9 @@ class ClientHandler(Thread):
             sys.exit()
 
     def sendupgrade(self):
-        """Send Upgrade to client"""
+        """
+        Send Upgrade to client
+        """
         for key, pkg in packages.items():
             self.sendupdate(pkg)
             time.sleep(1)
@@ -77,11 +95,20 @@ class ClientHandler(Thread):
         self.send(json.dumps({'file': "endTransfer"}))
 
     def sendupdate(self, pkg):
-        """Send Update of given Package to client"""
+        """
+        Send Update of given Package to client
+
+        :param self:
+        :param pkg: Package that shall be sent to the client
+        """
         self.send(json.dumps({'name': pkg.name, 'version': pkg.version, 'file': pkg.file}))
         self.sendfile(pkg.file)
 
     def sendfile(self, file):
+        """
+        Sends File as bytes to Client
+        :param file: file to send
+        """
         f = open(file, 'rb')
         while True:
             l = f.read(1024)
@@ -92,8 +119,10 @@ class ClientHandler(Thread):
         f.close()
 
     def send(self, msg):
-        """"Encode and send msg to client"""
-        print(msg)
+        """"
+        Encode and send message to client
+        :param msg: message
+        """
         self.socket.send(str.encode(msg + "\n"))
 
     def closesock(self):
@@ -102,7 +131,9 @@ class ClientHandler(Thread):
 
 
 def indexpackages():
-    """Iterates over Packages in Resource Folder and saves the Information in a List"""
+    """
+    Iterates over Packages in Resource Folder and saves the Information in a Dict
+    """
     files = os.listdir('resources')
     for file in files:
         details = file.split('.z')
@@ -118,6 +149,7 @@ def showclient(id):
 
 
 def listclients():
+    """List all Clients connected to the Server"""
     for key, value in clients.items():
         print("showing info for Client with Id: {}".format(key))
         value.printinfo()

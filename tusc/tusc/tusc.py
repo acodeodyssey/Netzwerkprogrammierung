@@ -16,12 +16,21 @@ class Tusc(Thread):
         self.client = myclient.MyClient()
 
     def run(self):
+        """
+        connect and init heartbeat
+        :return:
+        """
         if not self.connecttoserver():
             exit()
         self.hello()
         self.heartbeat()
 
     def connecttoserver(self):
+        """
+        Connect to a server in given list,
+        possible add on: servers in config file
+        :return:
+        """
         for idx, server in enumerate(self.servers):
             if self.client.connect(server['host'], server['port']):
                 print("Connected to {}".format(server['name']))
@@ -30,28 +39,49 @@ class Tusc(Thread):
                 return False
 
     def hello(self):
+        """
+        Log in to Server with information regarding itself
+        :return:
+        """
         hello = json.dumps({'type': "hello", 'id': self.client.id, 'info': self.client.info})
         self.client.send(hello)
         self.client.waitforanswer()
 
     def heartbeat(self):
+        """
+        Timed Event of sending heartbeat to server
+        :return:
+        """
         Timer(30.0, self.heartbeat).start()
         beat = json.dumps({'type': "beat"})
         self.client.send(beat)
 
     def update(self, package):
+        """
+        Request update of package from Server
+        :param package:
+        :return:
+        """
         updatemsg = json.dumps({'type': "update", 'package': package})
         self.client.send(updatemsg)
         self.client.recvpkgs()
         print("finished updating")
 
     def upgrade(self):
+        """
+        Request Upgrade from Server
+        :return:
+        """
         upgrademsg = json.dumps({'type': "upgrade"})
         self.client.send(upgrademsg)
         self.client.recvpkgs()
         print("finished upgrading")
 
     def exit(self):
+        """
+
+        :return:
+        """
         self.client.closeconnection()
         sys.exit()
 
