@@ -7,10 +7,10 @@ import time
 from threading import Thread
 
 import client
+import package
 
 clients = {}
-packages = []
-
+packages = {}
 
 class ClientHandler(Thread):
     def __init__(self, inSocket, address):
@@ -45,7 +45,7 @@ class ClientHandler(Thread):
                     logging.info("Client with Id:{} sent heartbeat".format(self.id))
                     self.timeout += 10.0
                 elif msgtype == "update":
-                    self.sendupdate(self, data['package'])
+                    self.sendupdate(self, packages[data['package']])
                 elif msgtype == "upgrade":
                     self.sendupgrade()
                 else:
@@ -60,7 +60,8 @@ class ClientHandler(Thread):
     def sendupgrade(self):
         """Send Upgrade to client"""
         for pkg in packages:
-            self.sendupdate(pkg)
+            self.sendupdate(pkg['pkg'])
+        self.send("endupgrade")
 
     def sendupdate(self, pkg):
         """Send Update of given Package to client"""
@@ -82,9 +83,13 @@ class ClientHandler(Thread):
 
 def indexpackages():
     """Iterates over Packages in Resource Folder and saves the Information in a List"""
-    files = os.listdir()
+    files = os.listdir('resources')
     for file in files:
-        print(os.stat(file))
+        details = file.split('.t')
+        pkgdetail = details[0].split('_')
+        pkg = package.Package(pkgdetail[0], pkgdetail[1], "localhost:8443/resources/{}".format(file),
+                              "resources/{}".format(file))
+        packages[pkg.name] = pkg
 
 def showclient(id):
     """Prints Information of Client with give Id"""
